@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
+const jwt = require("jsonwebtoken");
 
 // Validation helper
 const validateEmail = (email) => {
@@ -23,32 +24,32 @@ router.post('/register', async (req, res) => {
 
     // Validation
     if (!name || !email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Name, email, and password are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and password are required'
       });
     }
 
     if (!validateEmail(email)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Please provide a valid email' 
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid email'
       });
     }
 
     if (!validatePassword(password)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Password must be at least 4 characters long' 
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 4 characters long'
       });
     }
 
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'User already exists with this email' 
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
       });
     }
 
@@ -66,8 +67,8 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    return res.status(201).json({ 
-      success: true, 
+    return res.status(201).json({
+      success: true,
       message: 'User registered successfully',
       user: {
         id: user._id,
@@ -78,9 +79,9 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error during registration' 
+    res.status(500).json({
+      success: false,
+      message: 'Server error during registration'
     });
   }
 });
@@ -88,48 +89,54 @@ router.post('/register', async (req, res) => {
 // @route   POST /api/auth/login
 // @desc    Login user
 // @access  Public
+//const jwt = require("jsonwebtoken");
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validation
     if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email and password are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
       });
     }
 
     if (!validateEmail(email)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Please provide a valid email' 
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid email'
       });
     }
 
-    // Find user and include password field
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
       });
     }
 
-    // Compare password
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
       });
     }
 
-    return res.status(200).json({ 
-      success: true, 
+    const token = jwt.sign(
+      { id: user._id },
+      "secretkey",
+      { expiresIn: "1h" }
+    );
+
+    return res.status(200).json({
+      success: true,
       message: 'Login successful',
+      token: token,
       user: {
         id: user._id,
         name: user.name,
@@ -137,14 +144,14 @@ router.post('/login', async (req, res) => {
         role: user.role
       }
     });
+
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error during login' 
+    res.status(500).json({
+      success: false,
+      message: 'Server error during login'
     });
   }
 });
-
 module.exports = router;
 

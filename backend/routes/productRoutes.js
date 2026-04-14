@@ -1,20 +1,20 @@
 const express = require("express");
 const router = express.Router();
-
+const authMiddleware = require("../middleware/authMiddleware");
 const Product = require("../models/Product");
 
-// GET all products (from DB)
-router.get("/", async (req, res) => {
+// GET all products (protected)
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const products = await Product.find();
     res.json(products);
   } catch (error) {
-    res.send("Error fetching products");
+    res.status(500).send("Error fetching products");
   }
 });
 
-// POST add product (save to DB)
-router.post("/add", async (req, res) => {
+// POST add product (protected)
+router.post("/add", authMiddleware, async (req, res) => {
   try {
     const { name, quantity, price, category } = req.body;
 
@@ -27,13 +27,14 @@ router.post("/add", async (req, res) => {
 
     await newProduct.save();
 
-    res.send("Product saved to database");
+    res.status(201).send("Product saved to database");
   } catch (error) {
-    res.send("Error saving product");
+    res.status(500).send("Error saving product");
   }
 });
 
-router.put("/update/:id", async (req, res) => {
+// UPDATE product (protected)
+router.put("/update/:id", authMiddleware, async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
@@ -43,16 +44,17 @@ router.put("/update/:id", async (req, res) => {
 
     res.json(updatedProduct);
   } catch (error) {
-    res.send("Error updating product");
+    res.status(500).send("Error updating product");
   }
 });
 
-router.delete("/delete/:id", async (req, res) => {
+// DELETE product (protected)
+router.delete("/delete/:id", authMiddleware, async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.send("Product deleted");
   } catch (error) {
-    res.send("Error deleting product");
+    res.status(500).send("Error deleting product");
   }
 });
 

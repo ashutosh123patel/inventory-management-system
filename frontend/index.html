@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Inventory Management System - Product Dashboard">
+  <title>Product Dashboard - Inventory Management System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    #root {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    nav {
+      background-color: #333;
+      padding: 15px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #667eea;
+    }
+
+    .nav-brand {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .nav-spacer {
+      margin-left: auto;
+    }
+
+    .logout-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav>
+    <ul>
+      <li><span class="nav-brand">📦 Inventory System</span></li>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#products">Products</a></li>
+      <li><a href="#settings">Settings</a></li>
+      <li class="nav-spacer"></li>
+      <li><button class="logout-btn" onclick="logout()">Logout</button></li>
+    </ul>
+  </nav>
+
+  <!-- React Root -->
+  <div id="root"></div>
+
+  <!-- React & React DOM from CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Main App Script -->
+  <script>
+    // Logout function
+    function logout() {
+      localStorage.removeItem('token');
+      alert('Logged out successfully!');
+      window.location.href = '/login';
+    }
+
+    // Check if token exists, if not redirect to login
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login first');
+        window.location.href = '/login';
+      }
+    }
+
+    // Check authentication on page load
+    window.addEventListener('DOMContentLoaded', checkAuth);
+  </script>
+
+  <!-- Import Dashboard Component (when using a bundler like webpack/vite) -->
+  <!-- For now, this will be integrated once the frontend build is set up -->
+  <!-- Include your app bundle here -->
+  <!-- <script src="./app.js"></script> -->
+</body>
+</html>

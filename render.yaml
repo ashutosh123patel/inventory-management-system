@@ -1,0 +1,38 @@
+services:
+  # Backend API Service
+  - type: web
+    name: inventory-backend
+    runtime: node
+    plan: free
+    buildCommand: "cd backend && npm install"
+    startCommand: "cd backend && npm start"
+    envVars:
+      - key: MONGO_URI
+        scope: run
+        value: ${MONGO_URI}
+      - key: JWT_SECRET
+        scope: run
+        value: ${JWT_SECRET}
+      - key: FRONTEND_URL
+        scope: run
+        value: https://${RENDER_EXTERNAL_HOSTNAME}
+      - key: NODE_ENV
+        value: production
+
+  # Frontend Service
+  - type: web
+    name: inventory-frontend
+    runtime: node
+    plan: free
+    buildCommand: "cd frontend && npm install && REACT_APP_API_URL=$BACKEND_API_URL npm run build"
+    startCommand: "cd frontend && npm start"
+    envVars:
+      - key: BACKEND_API_URL
+        scope: build
+        fromService:
+          name: inventory-backend
+          property: url
+          appendPath: /api/v1
+      - key: REACT_APP_API_URL
+        scope: build
+        value: https://inventory-backend.onrender.com/api/v1

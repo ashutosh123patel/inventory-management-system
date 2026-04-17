@@ -17,9 +17,22 @@ dotenv.config();
 
 const app = express();
 
+// Dynamic CORS configuration for development and production
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  process.env.FRONTEND_URL, // For production (e.g., https://yourdomain.onrender.com)
+].filter(Boolean);
+
 // Middleware
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());

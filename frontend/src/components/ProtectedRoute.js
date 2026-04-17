@@ -1,13 +1,18 @@
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("token");
+const ProtectedRoute = ({ children, adminOnly = false }) => {
+  const { user, isAdmin } = useAuth();
 
-  if (!token) {
+  if (!user) {
     return <Navigate to="/login" />;
   }
 
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/dashboard" />;
+  }
+
   return children;
-}
+};
 
 export default ProtectedRoute;

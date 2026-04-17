@@ -1,17 +1,31 @@
 import axios from "axios";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/v1";
+
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-API.interceptors.request.use((req) => {
+API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
   if (token) {
-    req.headers.Authorization = token;
+    config.headers.Authorization = `Bearer ${token}`;
   }
 
-  return req;
+  return config;
 });
+
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    return Promise.reject(
+      error.response?.data?.message || "Something went wrong"
+    );
+  }
+);
 
 export default API;

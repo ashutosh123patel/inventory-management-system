@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import API from "../services/api";
+import { useParams, useNavigate } from "react-router-dom";
+import { getProductById, updateProduct } from "../services/productServices";
+import { useAuth } from "../context/AuthContext";
 
 function EditProduct() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const [form, setForm] = useState({
     name: "",
@@ -12,34 +15,53 @@ function EditProduct() {
     category: "",
   });
 
-  useEffect(() => {
-    fetchProduct();
-  }, []);
+  const [loading, setLoading] = useState(true);
 
-  const fetchProduct = async () => {
-    try {
-      const res = await API.get(`/products/${id}`);
-      setForm(res.data.product);
-    } catch (error) {
-      alert("Error fetching product");
-    }
-  };
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const data = await getProductById(id);
+        setForm(data);
+      } catch (error) {
+        alert("Error fetching product");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (!isAdmin) {
+    return <p>Access denied </p>;
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+
     try {
-      await API.put(`/products/update/${id}`, form);
-      alert("Product updated");
+      await updateProduct(id, {
+        ...form,
+        price: Number(form.price),
+        quantity: Number(form.quantity),
+      });
+
+      alert("Product updated successfully ");
+      navigate("/products");
+
     } catch (error) {
-      alert("Error updating product");
+      alert("Error updating product ");
     }
   };
 
+  if (loading) return <p>Loading...</p>;
+
   return (
-    <div>
+    <form onSubmit={handleUpdate}>
       <h2>Edit Product</h2>
 
       <input name="name" value={form.name} onChange={handleChange} />
@@ -47,8 +69,8 @@ function EditProduct() {
       <input name="quantity" value={form.quantity} onChange={handleChange} />
       <input name="category" value={form.category} onChange={handleChange} />
 
-      <button onClick={handleUpdate}>Update</button>
-    </div>
+      <button type="submit">Update</button>
+    </form>
   );
 }
 

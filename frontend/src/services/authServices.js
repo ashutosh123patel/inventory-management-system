@@ -1,11 +1,11 @@
-import axios from "axios";
+import API from "./api";
 
-const API = "http://localhost:5000/api/auth"; // change if your port is different
-
-export const registerUser = (data) => {
-    return axios.post(`${API}/register`, data);
+export const registerUser = async (userData) => {
+  const { data } = await API.post("/auth/register", userData);
+  return data;
 };
 
-export const loginUser = (data) => {
-    return axios.post(`${API}/login`, data);
+export const loginUser = async (userData) => {
+  const { data } = await API.post("/auth/login", userData);
+  return data;
 };

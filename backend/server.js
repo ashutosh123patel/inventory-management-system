@@ -1,35 +1,60 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const helmet = require("helmet");
+const morgan = require("morgan");
 
 const connectDB = require("./config/db");
+const errorHandler = require("./middleware/errorMiddleware");
+
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/authRoutes");
+const salesRoutes = require("./routes/salesRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 
-// Load env variables
 dotenv.config();
-
-// Connect DB
-connectDB();
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+app.use(morgan("dev"));
 
-// Routes
-app.use("/api/products", productRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/sales", salesRoutes);
+app.use("/api/v1/categories", categoryRoutes);
+app.use("/api/v1/reports", reportRoutes);
 
-// Root
 app.get("/", (req, res) => {
-  res.send("API Running");
+  res.send("Inventory Management API Running ✅");
 });
 
-// Server start
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
 });
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
